@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Message for You</title>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/instascan/1.0.0/instascan.min.js"></script>
+
+<style>
+body{
+    margin:0;
+    font-family: "Georgia", serif;
+    overflow:hidden;
+    color:white;
+    background: #111;
+}
+
+/* BACKGROUND CINEMATIC BERGULIR */
+.bg-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -2;
+    overflow: hidden;
+}
+
+.bg-track {
+    display: flex;
+    width: max-content;
+    height: 100%;
+    animation: scrollBg 30s linear infinite;
+}
+
+.bg-track img {
+    width: calc(100vh * 1.3);
+    height: 100%;
+    object-fit: cover;
+    filter: blur(3px) brightness(0.45); 
+    flex-shrink: 0;
+}
+
+@keyframes scrollBg {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+}
+
+/* DARK OVERLAY ACCENT */
+.overlay{
+    position:fixed;
+    width:100%;
+    height:100%;
+    background: linear-gradient(to bottom, rgba(0,0,0,0.4), rgba(0,0,0,0.7));
+    z-index:-1;
+}
+
+/* SCREEN 1: SCANNER INTERFACE */
+#scan-screen {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    box-sizing: border-box;
+    text-align: center;
+}
+
+.scanner-box {
+    position: relative;
+    width: 280px;
+    height: 280px;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 0 30px rgba(201, 164, 106, 0.4);
+    border: 3px solid #c9a46a;
+    background: #000;
+}
+
+#preview {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.scan-heart-overlay {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 80px;
+    color: rgba(201, 164, 106, 0.3);
+    pointer-events: none;
+    animation: pulse 1.5s infinite alternate;
+}
+
+@keyframes pulse {
+    0% { transform: translate(-50%, -50%) scale(0.9); opacity: 0.3; }
+    100% { transform: translate(-50%, -50%) scale(1.1); opacity: 0.6; }
+}
+
+.scan-hint {
+    margin-top: 20px;
+    font-size: 15px;
+    line-height: 1.5;
+    max-width: 300px;
+    color: #e0d0b8;
+}
+
+/* SCREEN 2: START (ENVELOPE) - Tersembunyi di awal */
+#start{
+    display: none;
+    height:100vh;
+    justify-content:center;
+    align-items:center;
+    flex-direction:column;
+}
+
+.envelope{
+    width:230px;
+    height:150px;
+    background:#d8c3a5;
+    border-radius:8px;
+    cursor:pointer;
+    box-shadow:0 0 50px rgba(0,0,0,0.7);
+    position: relative;
+}
+
+.envelope:before{
+    content:"";
+    position:absolute;
+    border-left:115px solid transparent;
+    border-right:115px solid transparent;
+    border-top:75px solid #b89b73;
+}
+
+.hint{
+    margin-top:15px;
+    font-size:13px;
+    opacity:0.7;
+}
+
+/* SCREEN 3: LETTER */
+#letter{
+    display:none;
+    height:100vh;
+    justify-content:center;
+    align-items:center;
+    padding:25px;
+}
+
+.card{
+    max-width:92%;
+    max-height:80vh;
+    overflow:auto;
+    background:rgba(0,0,0,0.55);
+    backdrop-filter:blur(12px);
+    padding:22px;
+    border-radius:15px;
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+}
+
+#typing{
+    white-space:pre-wrap;
+    line-height:1.9;
+    font-size:15px;
+    border-right:2px solid rgba(255,255,255,0.5);
+}
+
+/* BUTTON */
+button{
+    margin-top:15px;
+    padding:10px 18px;
+    border:none;
+    border-radius:20px;
+    background:#c9a46a;
+    font-weight:bold;
+    cursor:pointer;
+}
+
+/* SCREEN 4: FINAL */
+#final{
+    display:none;
+    height:100vh;
+    justify-content:center;
+    align-items:center;
+    text-align:center;
+    padding:30px;
+}
+
+.final-box{
+    background:rgba(0,0,0,0.6);
+    padding:25px;
+    border-radius:15px;
+    max-width:600px;
+    max-height: 85vh;
+    overflow-y: auto;
+}
+</style>
+</head>
+
+<body>
+
+<div class="bg-container">
+    <div class="bg-track">
+        <img src="image/1.jpg">
+        <img src="image/2.jpg">
+        <img src="image/3.jpg">
+        <img src="image/4.jpg">
+        <img src="image/5.jpg">
+        <img src="image/1.jpg">
+        <img src="image/2.jpg">
+        <img src="image/3.jpg">
+        <img src="image/4.jpg">
+        <img src="image/5.jpg">
+    </div>
+</div>
+
+<div class="overlay"></div>
+
+<audio id="music" loop>
+    <source src="music.mp3" type="audio/mp3">
+</audio>
+
+<div id="scan-screen">
+    <div class="scanner-box">
+        <video id="preview"></video>
+        <div class="scan-heart-overlay">❤️</div>
+    </div>
+    <div class="scan-hint">
+        Arahkan kamera ke <strong>Barcode Love</strong> untuk membuka pesan rahasia ini...
+    </div>
+</div>
+
+<div id="start">
+    <div class="envelope" onclick="start()"></div>
+    <div class="hint">Barcode cocok! Sentuh amplop untuk membuka pesan</div>
+</div>
+
+<div id="letter">
+    <div class="card">
+        <div id="typing"></div>
+        <button id="nextBtn" style="display:none" onclick="final()">lanjut</button>
+    </div>
+</div>
+
+<div id="final">
+    <div class="final-box">
+        <h2>Selamat Ulang Tahun</h2>
+        <p style="line-height:1.9;font-size:15px">
+        Aku tidak tahu bagaimana kamu menjalani hari-harimu sekarang, <br> 
+        dan aku juga tidak ingin mengganggu hidupmu.<br><br>
+        Aku hanya ingin menyampaikan sesuatu dengan tenang.<br><br>
+        Terima kasih. <br> 
+        Untuk semua hal yang pernah kita lewati bersama.<br><br>
+        Aku belajar bahwa tidak semua orang harus dimiliki untuk bisa berarti. <br> 
+        Ada orang yang datang hanya untuk memberi pelajaran, <br> 
+        lalu pergi ketika waktunya selesai.<br><br>
+        Dan kamu adalah salah satunya dalam hidupku.<br><br>
+        Kalau suatu hari kamu mengingat aku, <br> 
+        aku berharap yang kamu ingat bukan luka, <br> 
+        tapi ketenangan dari semua yang pernah terjadi.<br><br>
+        Aku mendoakan kamu selalu baik. <br> 
+        Selalu dikelilingi hal-hal yang membuat kamu merasa cukup. <br> 
+        Dan selalu punya alasan untuk tetap tersenyum.<br><br>
+        Dan kalau boleh jujur, <br> 
+        dalam diam yang tidak pernah aku ucapkan waktu itu…<br><br>
+        aku sayang sama kamu.<br><br>
+        Tapi sekarang aku sudah belajar, <br> 
+        bahwa sayang tidak selalu harus memiliki.<br><br>
+        Cukup menjadi doa yang tidak pernah berhenti.<br><br>
+        — mhmdisnnn
+        </p>
+    </div>
+</div>
+
+<script>
+const text = `
+Amara Nurazizah,
+
+Aku tidak datang untuk mengulang masa lalu.
+
+Aku hanya ingin menyampaikannya dengan tenang.
+
+Terima kasih untuk semua yang pernah kita lewati.
+
+Aku tidak menyesal pernah mengenalmu.
+
+Karena dari situ aku belajar banyak hal tentang hidup.
+
+Tentang bagaimana cara memahami tanpa harus memiliki.
+
+Tentang bagaimana cara menerima tanpa harus menggenggam terlalu erat.
+
+Sekarang aku hanya ingin kamu hidup dengan baik.
+
+Dengan hati yang lebih ringan.
+
+With jalan yang lebih jelas.
+
+Dan dengan ketenangan yang kamu pantas dapatkan.
+
+Kalau suatu hari kamu mengingat aku,
+
+aku berharap itu bukan sebagai luka.
+
+Tapi sebagai bagian kecil dari hidup yang pernah ada dan selesai dengan baik.
+
+Selamat ulang tahun.
+
+— mhmdisnnn
+`;
+
+let i = 0;
+let scanner;
+
+// Menjalankan Scanner saat halaman web dimuat
+window.addEventListener('load', function () {
+    scanner = new Instascan.Scanner({ video: document.getElementById('preview'), mirror: false });
+    
+    // Logika validasi barcode kata kunci "amara"
+    scanner.addListener('scan', function (content) {
+        if (content.toLowerCase().includes("amara")) {
+            scanner.stop(); // Matikan kamera jika sukses
+            document.getElementById("scan-screen").style.display = "none";
+            document.getElementById("start").style.display = "flex";
+        }
+    });
+
+    // Meminta izin akses kamera belakang HP
+    Instascan.Camera.getCameras().then(function (cameras) {
+        if (cameras.length > 0) {
+            let selectedCamera = cameras[cameras.length - 1]; // Kamera belakang biasanya di indeks terakhir
+            scanner.start(selectedCamera);
+        } else {
+            alert('Kamera tidak ditemukan atau izin ditolak.');
+        }
+    }).catch(function (e) {
+        console.error(e);
+    });
+});
+
+function type(){
+    if(i < text.length){
+        document.getElementById("typing").innerHTML += text[i];
+        i++;
+        setTimeout(type, 42); 
+    } else {
+        document.getElementById("nextBtn").style.display="inline-block";
+    }
+}
+
+function start(){
+    document.getElementById("start").style.display="none";
+    document.getElementById("letter").style.display="flex";
+    document.getElementById("music").play().catch(()=>{});
+    type();
+}
+
+function final(){
+    document.getElementById("letter").style.display="none";
+    document.getElementById("final").style.display="flex";
+}
+</script>
+
+</body>
+</html>
